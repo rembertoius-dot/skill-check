@@ -89,6 +89,9 @@ prefix without a finished check and a clear yes; it's the user's signature, not 
 
 ## Updates and audits
 
+- **`npx skills check` is not read-only**: it installs available updates. To see what's outdated
+  without installing, clone the source and `diff -ru` against the installed copy instead.
+
 - **Before `npx skills update`**, run the check against the new version and compare it with the
   installed copy (`~/.agents/skills/<name>` or `~/.claude/skills/<name>`), e.g.
   `diff -ru <installed> <fetched>`. A skill that was fine can turn bad in an update, so review what

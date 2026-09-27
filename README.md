@@ -34,7 +34,7 @@ run `npx skills add` directly. To make the check impossible to skip, add this ho
 }
 ```
 
-Now any `skills add` or `skills update` the agent tries is stopped until it has run the check, shown
+Now any `skills add`, `update` or `check` (which also installs updates) the agent tries is stopped until it has run the check, shown
 you the verdict, and you've said yes. Listing (`--list`) is never blocked. It needs `jq`
 (`brew install jq`). If you installed the skill somewhere else, point `command` at that folder's
 `hooks/skill-check-gate.sh`.

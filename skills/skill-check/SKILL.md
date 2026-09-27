@@ -83,6 +83,10 @@ If the user wants it after seeing the verdict, install it exactly from the sourc
 (`npx skills add <source>`), and keep global versus project scope as they ask. Everything the skill does
 later still goes through the normal permission prompts, so keep them on.
 
+If a command was blocked with "skill-check gate", the user has the automatic hook on: do steps 1–3
+first, then after their yes re-run the exact command prefixed with `SKILL_CHECKED=1`. Never add that
+prefix without a finished check and a clear yes; it's the user's signature, not a workaround.
+
 ## Updates and audits
 
 - **Before `npx skills update`**, run the check against the new version and compare it with the

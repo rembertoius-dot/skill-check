@@ -15,6 +15,30 @@ npx skills add rembertoius-dot/skill-check
 Then ask your agent to install a skill as usual ("install this skill: owner/repo"), send it a
 GitHub link, or ask "is this skill safe?". It also works for auditing the skills you already have.
 
+## Make it automatic (Claude Code)
+
+The skill triggers on its own when you ask your agent to install something, but an agent can still
+run `npx skills add` directly. To make the check impossible to skip, add this hook to
+`~/.claude/settings.json` (merge it into any `hooks` you already have):
+
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [{ "type": "command", "command": "~/.claude/skills/skill-check/hooks/skill-check-gate.sh", "timeout": 10 }]
+      }
+    ]
+  }
+}
+```
+
+Now any `skills add` or `skills update` the agent tries is stopped until it has run the check, shown
+you the verdict, and you've said yes. Listing (`--list`) is never blocked. It needs `jq`
+(`brew install jq`). If you installed the skill somewhere else, point `command` at that folder's
+`hooks/skill-check-gate.sh`.
+
 ## Why
 
 Skills run with your agent's full permissions: files, terminal, logged-in accounts. Studies of public

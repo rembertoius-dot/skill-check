@@ -23,14 +23,22 @@ pick_python() {
     command -v "$c" >/dev/null 2>&1 && { command -v "$c"; return; }
   done
 }
-if [ ! -x "$VENV/bin/skillspector" ] || [ ! -x "$VENV/bin/skill-scanner" ]; then
+# Reuse scanners the user already has on PATH (e.g. an existing SkillSpector install); otherwise use
+# (and if needed create) our own venv.
+SS_BIN="$(command -v skillspector || echo "$VENV/bin/skillspector")"
+SC_BIN="$(command -v skill-scanner || echo "$VENV/bin/skill-scanner")"
+if [ ! -x "$SS_BIN" ] || [ ! -x "$SC_BIN" ]; then
   PY="$(pick_python)"
   [ -n "$PY" ] || { echo "Need Python 3.10+ (macOS: brew install python@3.12)" >&2; exit 2; }
   echo "First run: installing the scanners into $VENV (one time)…" >&2
   mkdir -p "$HOME_DIR"
   "$PY" -m venv "$VENV" && "$VENV/bin/pip" install -q --upgrade pip >/dev/null 2>&1
-  "$VENV/bin/pip" install -q cisco-ai-skill-scanner "git+https://github.com/NVIDIA/skillspector.git" \
-    || { echo "Scanner install failed" >&2; exit 2; }
+  PKGS=()
+  [ -x "$SS_BIN" ] || PKGS+=("git+https://github.com/NVIDIA/skillspector.git")
+  [ -x "$SC_BIN" ] || PKGS+=("cisco-ai-skill-scanner")
+  "$VENV/bin/pip" install -q "${PKGS[@]}" || { echo "Scanner install failed" >&2; exit 2; }
+  [ -x "$SS_BIN" ] || SS_BIN="$VENV/bin/skillspector"
+  [ -x "$SC_BIN" ] || SC_BIN="$VENV/bin/skill-scanner"
 fi
 
 # --- fetch the skill without installing it --------------------------------------------------------
@@ -54,13 +62,13 @@ case "$SRC" in
 esac
 
 # --- scan ---------------------------------------------------------------------------------------
-"$VENV/bin/skillspector" scan "$FETCHED" --no-llm --format json --output "$REPORTS/skillspector.json" >"$REPORTS/skillspector.log" 2>&1
+"$SS_BIN" scan "$FETCHED" --no-llm --format json --output "$REPORTS/skillspector.json" >"$REPORTS/skillspector.log" 2>&1
 SS=$?
 # Cisco's scanner wants a folder with SKILL.md at its root; repos with skills in subfolders use scan-all.
 if [ -f "$FETCHED/SKILL.md" ]; then
-  "$VENV/bin/skill-scanner" scan "$FETCHED" --format json --output "$REPORTS/cisco.json" >"$REPORTS/cisco.log" 2>&1
+  "$SC_BIN" scan "$FETCHED" --format json --output "$REPORTS/cisco.json" >"$REPORTS/cisco.log" 2>&1
 else
-  "$VENV/bin/skill-scanner" scan-all "$FETCHED" --recursive --format json --output "$REPORTS/cisco.json" >"$REPORTS/cisco.log" 2>&1
+  "$SC_BIN" scan-all "$FETCHED" --recursive --format json --output "$REPORTS/cisco.json" >"$REPORTS/cisco.log" 2>&1
 fi
 CS=$?
 

@@ -26,7 +26,9 @@ bash <this skill's folder>/scripts/check_skill.sh <source>
 This skill's folder is wherever this SKILL.md lives, usually `~/.claude/skills/skill-check` or
 `~/.agents/skills/skill-check` (with `npx skills add`), or `.claude/skills/skill-check` inside a project.
 `<source>` can be `owner/repo`, a GitHub URL (including `/tree/<branch>/<path>` to a single skill), a
-local folder, or a `.skill` file. The first run installs both scanners into `~/.skill-check/venv`,
+local folder, or a `.skill` file. For big repos (thousands of files) scanning takes minutes, so point it at the skill's own folder:
+`https://github.com/owner/repo/tree/main/skills/<name>`. It reuses `skillspector` or `skill-scanner`
+if they're already installed. Otherwise the first run installs them into `~/.skill-check/venv`,
 which takes a minute. The script clones into a throwaway folder and prints where the reports and the
 fetched files are. Both scanners run offline (static analysis, no API keys).
 
